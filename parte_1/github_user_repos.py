@@ -1,11 +1,11 @@
 import csv
 import json
 import logging
+import sqlite3
 import time
 import requests
 from typing import List, Dict, Any, Optional, Tuple
 
-# Configure logging format and level
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -22,21 +22,13 @@ def fetch_with_retry(
     initial_backoff: float = 1.0,
     timeout: float = 10.0
 ) -> Optional[requests.Response]:
-    """
-    Executes a GET request with exponential backoff and rate-limit delay handling.
-    
-    Handles:
-    - Primary & secondary rate limits (HTTP 403/429) using Retry-After or X-RateLimit-Reset headers.
-    - Temporary server errors (HTTP 500, 502, 503, 504).
-    - Network connectivity exceptions.
-    """
+
     backoff = initial_backoff
     
     for attempt in range(1, max_retries + 1):
         try:
             response = requests.get(url, headers=headers, params=params, timeout=timeout)
             
-            # Handle rate limiting (HTTP 403 or 429)
             if response.status_code in (403, 429):
                 retry_after = response.headers.get("Retry-After")
                 ratelimit_remaining = response.headers.get("X-RateLimit-Remaining")
@@ -59,7 +51,6 @@ def fetch_with_retry(
                     backoff *= 2
                     continue
 
-            # Retry on temporary server errors (5xx)
             elif response.status_code in (500, 502, 503, 504):
                 logging.warning(f"Server error HTTP {response.status_code} on attempt {attempt}/{max_retries}. Retrying in {backoff:.1f}s...")
                 if attempt < max_retries:
@@ -85,20 +76,7 @@ def fetch_github_user_repos(
     token: Optional[str] = None,
     max_retries: int = 5
 ) -> Tuple[List[Dict[str, Any]], int]:
-    """
-    Fetches all public repositories for a specified GitHub user using the REST API,
-    logging errors, handling pagination, and applying exponential backoff retry logic.
-    
-    Parameters:
-        username (str): The GitHub handle/username.
-        token (str, optional): Personal Access Token (PAT) for authenticated requests.
-        max_retries (int): Maximum number of retry attempts per page request.
-        
-    Returns:
-        Tuple[List[Dict[str, Any]], int]:
-            - List of repository metadata dictionaries successfully processed.
-            - Total count of repositories processed.
-    """
+
     url = f"https://api.github.com/users/{username}/repos"
     
     headers = {
@@ -113,7 +91,7 @@ def fetch_github_user_repos(
     repos_data = []
     processed_count = 0
     page = 1
-    per_page = 100  # Maximum allowable items per page
+    per_page = 100
     
     while True:
         params = {
@@ -168,16 +146,6 @@ def fetch_github_user_repos(
     return repos_data, processed_count
 
 def export_to_csv(repos: List[Dict[str, Any]], filename: str) -> int:
-    """
-    Exports processed repository data to a CSV file and logs any file I/O errors.
-    
-    Parameters:
-        repos (List[Dict[str, Any]]): List of repository metadata.
-        filename (str): Target CSV filename.
-        
-    Returns:
-        int: Number of rows successfully written to CSV.
-    """
     fieldnames = [
         "name",
         "description",
@@ -202,6 +170,52 @@ def export_to_csv(repos: List[Dict[str, Any]], filename: str) -> int:
         
     return written_count
 
+def export_to_sqlite(repos: List[Dict[str, Any]], db_filename: str, table_name: str = "repositories") -> int:
+    inserted_count = 0
+    try:
+        conn = sqlite3.connect(db_filename)
+        cursor = conn.cursor()
+
+        create_table_query = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE,
+            description TEXT,
+            main_language TEXT,
+            stars INTEGER,
+            forks INTEGER,
+            creation_date TEXT,
+            last_update_date TEXT
+        );
+        """
+        cursor.execute(create_table_query)
+        
+        insert_query = f"""
+        INSERT OR REPLACE INTO {table_name} (
+            name, description, main_language, stars, forks, creation_date, last_update_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?);
+        """
+        
+        for repo in repos:
+            cursor.execute(insert_query, (
+                repo.get("name"),
+                repo.get("description"),
+                repo.get("main_language"),
+                repo.get("stars"),
+                repo.get("forks"),
+                repo.get("creation_date"),
+                repo.get("last_update_date")
+            ))
+            inserted_count += 1
+            
+        conn.commit()
+        conn.close()
+        logging.info(f"Successfully exported {inserted_count} repository records to SQLite database '{db_filename}' (table: '{table_name}').")
+    except sqlite3.Error as sql_err:
+        logging.error(f"Failed to write to SQLite database '{db_filename}': {sql_err}")
+        
+    return inserted_count
+
 if __name__ == "__main__":
     target_user = input("Enter GitHub username: ").strip()
     pat_token = input("Enter Personal Access Token (optional, press Enter to skip): ").strip() or None
@@ -216,8 +230,13 @@ if __name__ == "__main__":
         
         if repositories:
             csv_filename = f"{target_user}_repos.csv"
-            exported_count = export_to_csv(repositories, csv_filename)
-            print(f"Total Records Written to CSV: {exported_count}\n")
+            db_filename = f"{target_user}_repos.db"
+            
+            csv_count = export_to_csv(repositories, csv_filename)
+            sqlite_count = export_to_sqlite(repositories, db_filename)
+            
+            print(f"Total Records Written to CSV ({csv_filename}): {csv_count}")
+            print(f"Total Records Written to SQLite DB ({db_filename}): {sqlite_count}\n")
             
             print("Preview of fetched repositories:")
             print(json.dumps(repositories[:2], indent=2))
