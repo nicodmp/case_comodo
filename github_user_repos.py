@@ -1,5 +1,6 @@
-import requests
+import csv
 import json
+import requests
 from typing import List, Dict, Any, Optional
 
 def fetch_github_user_repos(username: str, token: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -57,6 +58,22 @@ def fetch_github_user_repos(username: str, token: Optional[str] = None) -> List[
 
     return repos_data
 
+def export_to_csv(repos: List[Dict[str, Any]], filename: str) -> None:
+    fieldnames = [
+        "name",
+        "description",
+        "main_language",
+        "stars",
+        "forks",
+        "creation_date",
+        "last_update_date"
+    ]
+    
+    with open(filename, mode="w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(repos)
+
 if __name__ == "__main__":
     target_user = input("Enter GitHub username: ").strip()
     pat_token = input("Enter Personal Access Token (optional, press Enter to skip): ").strip() or None
@@ -64,6 +81,12 @@ if __name__ == "__main__":
     if target_user:
         print(f"\nFetching repositories for '{target_user}'...")
         repositories = fetch_github_user_repos(target_user, pat_token)
-        print(f"Total repositories found: {len(repositories)}\n")
+        print(f"Total repositories found: {len(repositories)}")
         
-        print(json.dumps(repositories, indent=2))
+        if repositories:
+            csv_filename = f"{target_user}_repos.csv"
+            export_to_csv(repositories, csv_filename)
+            print(f"Successfully exported data to '{csv_filename}'.\n")
+            
+            print("Preview of fetched repositories:")
+            print(json.dumps(repositories[:2], indent=2))
