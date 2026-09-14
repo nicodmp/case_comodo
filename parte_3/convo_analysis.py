@@ -7,7 +7,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field, ValidationError
 
 MODEL = "gpt-5-mini"
-INPUT_FILE = "input.json"
+INPUT_FILE = "conversas_prevendas.json"
 OUTPUT_FILE = "output.json"
 MAX_RETRIES = 3
 
