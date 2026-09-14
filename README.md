@@ -37,4 +37,4 @@ A partir disso, é possível refinar os resultados dando pesos diferentes de aco
 
 Já para os campos qualitativos, como `sinais`, `proxima_acao` e `resumo_para_o_vendedor`, eu solicitaria uma avaliação humana focada não apenas na correção dos dados, mas também no que faltou ou pode ser melhor descrito, factualidade e relevância para a equipe de Vendas.
 
-Após 3 meses, também será possível comparar no mundo real a classificação de leads pela IA com a taxa de conversão, portanto, caso os leads 
+Após 3 meses, também será possível comparar no mundo real a classificação de leads pela IA com a taxa de conversão, portanto, caso a conversão de leads quentes > leads mornos > leads frios, isso é um sinal de que a classificação está performando de acordo com as expectativas.
