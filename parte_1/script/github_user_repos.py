@@ -1,6 +1,7 @@
 import csv
 import json
 import logging
+import os
 import sqlite3
 import time
 import requests
@@ -217,8 +218,8 @@ def export_to_sqlite(repos: List[Dict[str, Any]], db_filename: str, table_name: 
     return inserted_count
 
 if __name__ == "__main__":
-    target_user = input("Enter GitHub username: ").strip()
-    pat_token = input("Enter Personal Access Token (optional, press Enter to skip): ").strip() or None
+    target_user = "microsoft"
+    pat_token = os.environ["ACCESS_TOKEN"] or None
     
     if target_user:
         logging.info(f"Starting repository retrieval process for '{target_user}'...")
@@ -229,7 +230,8 @@ if __name__ == "__main__":
         print(f"Total Repositories Processed: {total_processed}")
         
         if repositories:
-            csv_filename = f"{target_user}_repos.csv"
+            timestamp = datetime.now().strftime("%Y%m%d\_%H%M%S")
+            csv\_filename = f"{target\_user}\_repos\_{timestamp}.csv"
             db_filename = f"{target_user}_repos.db"
             
             csv_count = export_to_csv(repositories, csv_filename)
