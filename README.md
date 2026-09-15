@@ -7,7 +7,7 @@ O script pode ser encontrado na pasta "parte_1", e tem como alvo os repos da org
 
 O script tem dois outputs: um arquivo CSV `{usuario}_repos_{data}.csv`, e um arquivo sqlite3 `{usuario}_repos.db`. Optei por gerar ambos arquivos para possibilitar uma consulta visual fácil e rápida por um usuário humano atraves do arquivo CSV, e um historico consolidado e recuperável no banco de dados sqlite3. Não produzi um output em .jsonl pois, no momento, o resultado não será analisado por uma IA, que seria a principal motivação para produzir um output nesse formato.
 
-Para o propósito deste desafio, a execução automática do script acontece através de um **cron job**, cujo script tambem está disponivel dentro da pasta "parte_1". Seria possivel utilizar um n8n self-hosted para execução automatizada do script, mas considero uma camada desnecessária dada a baixa complexidade do script e custo e trabalho adicional envolvido para o deploy e manutenção de uma instância de n8n self-hosted. 
+Para o propósito deste desafio, a execução automática do script acontece através de um **cron job**, cujo script tambem está disponivel dentro da pasta "parte_1". Supondo que o projeto será hospedado em uma VM Linux, basta adicionar o cron conforme arquivo fornecido ao crontab. Seria possível utilizar um n8n self-hosted para execução automatizada do script, mas considero uma camada desnecessária dada a baixa complexidade do script e custo e trabalho adicional envolvido para o deploy e manutenção de uma instância de n8n self-hosted. 
 
 Notebook no Google Colab:
 https://colab.research.google.com/drive/1vee0T_Z1PdpAxYBrZ10nNAJyv_xln0nZ?usp=sharing
@@ -49,6 +49,10 @@ CREATE TABLE investimento_midia (
 ```
 
 Para organização do README, os resultados das queries podem ser encontrados nos arquivos CSV disponíveis na pasta "parte_2".
+
+As justificativas de como cada número foi alcançado estão descritas nos comentários de cada query.
+
+A única consulta na qual não tenho confiança é a 2, pois não consegui encontrar um histórico por lead significando por quais etapas cada lead já passou, nem há leads duplicados na tabela, impossibilitando um cálculo preciso que contemple todos os leads e o percentual de perda real entre etapas. Acredito que a forma mais prática de obter essa informação seria permitindo a duplicação de leads a cada nova etapa alcançada no funil, com timestamps, de permitindo distinguir a quantidade real de leads perdidos a cada etapa.
 
 ## Parte 3:
 Script desenvolvido iterativamente com **Claude Code**.
