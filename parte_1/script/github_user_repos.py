@@ -4,6 +4,7 @@ import logging
 import os
 import sqlite3
 import time
+from datetime import datetime
 import requests
 from typing import List, Dict, Any, Optional, Tuple
 
@@ -23,7 +24,6 @@ def fetch_with_retry(
     initial_backoff: float = 1.0,
     timeout: float = 10.0
 ) -> Optional[requests.Response]:
-
     backoff = initial_backoff
     
     for attempt in range(1, max_retries + 1):
@@ -77,7 +77,6 @@ def fetch_github_user_repos(
     token: Optional[str] = None,
     max_retries: int = 5
 ) -> Tuple[List[Dict[str, Any]], int]:
-
     url = f"https://api.github.com/users/{username}/repos"
     
     headers = {
@@ -147,6 +146,9 @@ def fetch_github_user_repos(
     return repos_data, processed_count
 
 def export_to_csv(repos: List[Dict[str, Any]], filename: str) -> int:
+    """
+    Exports processed repository data to a CSV file and logs any file I/O errors.
+    """
     fieldnames = [
         "name",
         "description",
@@ -172,11 +174,14 @@ def export_to_csv(repos: List[Dict[str, Any]], filename: str) -> int:
     return written_count
 
 def export_to_sqlite(repos: List[Dict[str, Any]], db_filename: str, table_name: str = "repositories") -> int:
+    """
+    Exports processed repository data to a SQLite database.
+    """
     inserted_count = 0
     try:
         conn = sqlite3.connect(db_filename)
         cursor = conn.cursor()
-
+        
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -230,8 +235,8 @@ if __name__ == "__main__":
         print(f"Total Repositories Processed: {total_processed}")
         
         if repositories:
-            timestamp = datetime.now().strftime("%Y%m%d\_%H%M%S")
-            csv\_filename = f"{target\_user}\_repos\_{timestamp}.csv"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            csv_filename = f"{target_user}_repos_{timestamp}.csv"
             db_filename = f"{target_user}_repos.db"
             
             csv_count = export_to_csv(repositories, csv_filename)
