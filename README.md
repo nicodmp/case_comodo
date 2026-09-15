@@ -52,7 +52,7 @@ Para organização do README, os resultados das queries podem ser encontrados no
 
 As justificativas de como cada número foi alcançado estão descritas nos comentários de cada query.
 
-A única consulta na qual não tenho confiança é a 2, pois não consegui encontrar um histórico por lead significando por quais etapas cada lead já passou, nem há leads duplicados na tabela, impossibilitando um cálculo preciso que contemple todos os leads e o percentual de perda real entre etapas. Acredito que a forma mais prática de obter essa informação seria permitindo a duplicação de leads a cada nova etapa alcançada no funil, com timestamps, de permitindo distinguir a quantidade real de leads perdidos a cada etapa.
+A única consulta na qual não tenho confiança é a 2, pois não consegui encontrar um histórico por lead significando por quais etapas cada lead já passou, nem há leads duplicados na tabela, impossibilitando um cálculo preciso que contemple todos os leads e o percentual de perda real entre etapas. Acredito que a forma mais prática de obter essa informação seria permitindo a duplicação de leads a cada nova etapa alcançada no funil, com timestamps, permitindo distinguir a quantidade real de leads perdidos a cada etapa.
 
 ## Parte 3:
 Script desenvolvido iterativamente com **Claude Code**.
