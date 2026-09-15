@@ -65,7 +65,7 @@ Possíveis pontos de melhoria para esse script seriam:
 - Logging mais robusto;
 - Separação de funcionalidades em diferentes arquivos.
 
-Para o escopo deste desafio e o volume de processamento mencionado no case (4000 conversas em 3 meses), considero que uma arquitetura contemplando os pontos mencionados acima seria _overengineering_tal nesse momento, mas podem ser implementados caso o script precisa escalar em quantidade de conversas processadas no futuro.
+Para o escopo deste desafio e o volume de processamento mencionado no case (4000 conversas em 3 meses), considero que uma arquitetura contemplando os pontos mencionados acima seria _overengineering_ nesse momento, mas podem ser implementados caso o script precisa escalar em quantidade de conversas processadas no futuro.
 
 Para definir se a classificação está funcionando bem ou não, o primeiro e mais crucial passo é inserir um conjunto de referência humano, selecionar aleatoriamente uma amostra de 20 a 30% das conversas, e classificar por um profissional humano, comparando com os resultados da IA para a mesma conversa. Dividir os resultados iguais pelo total de conversas fornecerá a métrica de precisão do processo.
 
